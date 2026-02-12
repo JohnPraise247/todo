@@ -35,7 +35,8 @@ Users should be able to:
 
 ### Links
 
-- Live Site URL: [Todo App](https://johnpraise247.github.io/todo/)
+- Solution URL: [visit](https://www.frontendmentor.io/solutions/todo-app-8MNuVGSeQt)
+- Live Site URL: [visit](https://johnpraise247.github.io/todo/)
 
 ## My process
 
@@ -51,5 +52,40 @@ Users should be able to:
 ### AI Collaboration
 
 
-- Claude
+- Claude, GitHub Copilot
 - Brainstorming solutions and generating code
+
+
+
+---
+
+## Running Locally
+
+Run with a Local Development Server 
+
+Using a local server avoids potential issues with module loading and file paths.
+
+#### Using VS Code Live Server
+
+1. Install the **Live Server** extension in VS Code.
+2. Open the project folder in VS Code.
+3. Right-click `index.html`.
+4. Click **"Open with Live Server"**.
+
+#### Using Node (http-server)
+
+If you have Node.js installed:
+
+```bash
+npx serve .
+```
+
+or
+
+```bash
+npx http-server .
+```
+
+Then open the local URL shown in your terminal (usually `http://localhost:3000` or similar).
+
+---
