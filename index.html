@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    
+    <!-- DaisyUI + Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MithrilJS -->
+    <script src="https://unpkg.com/mithril@2.2.2/mithril.js"></script>
+    
+    <!-- Google Fonts - Josefin Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Primary */
+            --blue-500: hsl(220, 98%, 61%);
+            --gradient-check: linear-gradient(135deg, hsl(192, 100%, 67%), hsl(280, 87%, 65%));
+            
+            /* Light Theme */
+            --light-bg: hsl(0, 0%, 98%);
+            --light-card-bg: hsl(0, 0%, 100%);
+            --light-text: hsl(235, 19%, 35%);
+            --light-text-muted: hsl(236, 9%, 61%);
+            --light-border: hsl(233, 11%, 84%);
+            --light-hover: hsl(235, 19%, 35%);
+            
+            /* Dark Theme */
+            --dark-bg: hsl(235, 21%, 11%);
+            --dark-card-bg: hsl(235, 24%, 19%);
+            --dark-text: hsl(234, 39%, 85%);
+            --dark-text-hover: hsl(236, 33%, 92%);
+            --dark-text-muted: hsl(233, 14%, 35%);
+            --dark-border: hsl(237, 14%, 26%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Josefin Sans', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: var(--dark-bg);
+            position: relative;
+            font-size: 18px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            background-image: url('./images/bg-mobile-dark.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+        }
+        
+        /* Desktop background */
+        @media (min-width: 641px) {
+            body::before {
+                background-image: url('./images/bg-desktop-dark.jpg');
+            }
+        }
+        
+        [data-theme="light"] body {
+            background: var(--light-bg);
+        }
+        
+        [data-theme="light"] body::before {
+            background-image: url('./images/bg-mobile-light.jpg');
+        }
+        
+        /* Light theme desktop background */
+        @media (min-width: 641px) {
+            [data-theme="light"] body::before {
+                background-image: url('./images/bg-desktop-light.jpg');
+            }
+        }
+        
+        .todo-container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 0.8rem;
+            color: white;
+            margin-bottom: 2.5rem;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 26px;
+            height: 26px;
+            transition: transform 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .theme-icon {
+            width: 26px;
+            height: 26px;
+            fill: white;
+        }
+        
+        .todo-input {
+            background: var(--dark-card-bg);
+            border: none;
+            border-radius: 5px;
+            padding: 1.25rem 1.5rem;
+            font-size: 18px;
+            color: var(--dark-text);
+            width: 100%;
+            margin-bottom: 1.5rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        [data-theme="light"] .todo-input {
+            background: var(--light-card-bg);
+            color: var(--light-text);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .todo-input::placeholder {
+            color: var(--dark-text-muted);
+        }
+        
+        [data-theme="light"] .todo-input::placeholder {
+            color: var(--light-text-muted);
+        }
+        
+        .todo-card {
+            background: var(--dark-card-bg);
+            border-radius: 5px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        [data-theme="light"] .todo-card {
+            background: var(--light-card-bg);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .todo-item {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            border-bottom: 1px solid var(--dark-border);
+            cursor: move;
+            transition: background 0.2s ease;
+        }
+        
+        [data-theme="light"] .todo-item {
+            border-bottom: 1px solid var(--light-border);
+        }
+        
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+        
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        [data-theme="light"] .todo-item:hover {
+            background: rgba(0, 0, 0, 0.01);
+        }
+        
+        .todo-item.dragging {
+            opacity: 0.5;
+        }
+        
+        .checkbox-wrapper {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--dark-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+        
+        [data-theme="light"] .checkbox-wrapper {
+            border-color: var(--light-border);
+        }
+        
+        .checkbox-wrapper:hover {
+            border: 1px solid transparent;
+            background: var(--gradient-check);
+        }
+        
+        .checkbox-wrapper.checked {
+            background: var(--gradient-check);
+            border: none;
+        }
+        
+        .checkmark {
+            display: none;
+            width: 11px;
+            height: 9px;
+        }
+        
+        .checkbox-wrapper.checked .checkmark {
+            display: block;
+        }
+        
+        .todo-text {
+            flex: 1;
+            color: var(--dark-text);
+            font-size: 18px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        [data-theme="light"] .todo-text {
+            color: var(--light-text);
+        }
+        
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: var(--dark-text-muted);
+        }
+        
+        [data-theme="light"] .todo-text.completed {
+            color: var(--light-text-muted);
+        }
+        
+        .delete-btn {
+            opacity: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 18px;
+            height: 18px;
+            transition: opacity 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .todo-item:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .delete-icon {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .footer-controls {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: hsl(233, 14%, 35%);
+        }
+        
+        [data-theme="light"] .footer-controls {
+            color: var(--light-text-muted);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 1.25rem;
+        }
+        
+        .filter-btn {
+            background: none;
+            border: none;
+            color: hsl(233, 14%, 35%);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 0;
+            transition: color 0.2s ease;
+        }
+        
+        [data-theme="light"] .filter-btn {
+            color: var(--light-text-muted);
+        }
+        
+        .filter-btn:hover {
+            color: var(--dark-text-hover);
+        }
+        
+        [data-theme="light"] .filter-btn:hover {
+            color: var(--light-hover);
+        }
+        
+        .filter-btn.active {
+            color: var(--blue-500);
+        }
+        
+        .clear-btn {
+            background: none;
+            border: none;
+            color: hsl(233, 14%, 35%);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            transition: color 0.2s ease;
+        }
+        
+        [data-theme="light"] .clear-btn {
+            color: var(--light-text-muted);
+        }
+        
+        .clear-btn:hover {
+            color: var(--dark-text-hover);
+        }
+        
+        [data-theme="light"] .clear-btn:hover {
+            color: var(--light-hover);
+        }
+        
+        .footer-hint {
+            text-align: center;
+            margin-top: 3rem;
+            font-size: 14px;
+            color: hsl(233, 14%, 35%);
+        }
+        
+        [data-theme="light"] .footer-hint {
+            color: var(--light-text-muted);
+        }
+        
+        .mobile-filters {
+            display: none;
+        }
+        
+        @media (max-width: 640px) {
+            .header-title {
+                font-size: 2rem;
+                letter-spacing: 0.6rem;
+            }
+            
+            .footer-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .desktop-filters {
+                display: none;
+            }
+            
+            .mobile-filters {
+                display: flex;
+                justify-content: center;
+                padding: 1rem;
+                background: var(--dark-card-bg);
+                border-radius: 5px;
+                margin-bottom: 1rem;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            }
+            
+            [data-theme="light"] .mobile-filters {
+                background: var(--light-card-bg);
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script type="module">
+        const m = window.m;
+        
+        // State Management
+        const TodoStore = {
+            todos: [],
+            filter: 'all',
+            theme: 'dark',
+            draggedIndex: null,
+            
+            init() {
+                const saved = localStorage.getItem('todos');
+                if (saved) {
+                    this.todos = JSON.parse(saved);
+                }
+                
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    this.theme = savedTheme;
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            },
+            
+            save() {
+                localStorage.setItem('todos', JSON.stringify(this.todos));
+            },
+            
+            addTodo(text) {
+                if (text.trim()) {
+                    this.todos.push({
+                        id: Date.now(),
+                        text: text.trim(),
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    });
+                    this.save();
+                }
+            },
+            
+            toggleTodo(id) {
+                const todo = this.todos.find(t => t.id === id);
+                if (todo) {
+                    todo.completed = !todo.completed;
+                    this.save();
+                }
+            },
+            
+            deleteTodo(id) {
+                this.todos = this.todos.filter(t => t.id !== id);
+                this.save();
+            },
+            
+            clearCompleted() {
+                this.todos = this.todos.filter(t => !t.completed);
+                this.save();
+            },
+            
+            setFilter(filter) {
+                this.filter = filter;
+            },
+            
+            toggleTheme() {
+                this.theme = this.theme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', this.theme);
+                localStorage.setItem('theme', this.theme);
+            },
+            
+            reorderTodos(fromIndex, toIndex) {
+                const [removed] = this.todos.splice(fromIndex, 1);
+                this.todos.splice(toIndex, 0, removed);
+                this.save();
+            },
+            
+            getFilteredTodos() {
+                switch(this.filter) {
+                    case 'active':
+                        return this.todos.filter(t => !t.completed);
+                    case 'completed':
+                        return this.todos.filter(t => t.completed);
+                    default:
+                        return this.todos;
+                }
+            },
+            
+            getStats() {
+                return {
+                    total: this.todos.length,
+                    active: this.todos.filter(t => !t.completed).length,
+                    completed: this.todos.filter(t => t.completed).length
+                };
+            }
+        };
+        
+        // SVG Icons
+        const SunIcon = {
+            view() {
+                return m('svg', { 
+                    class: 'theme-icon',
+                    xmlns: 'http://www.w3.org/2000/svg',
+                    viewBox: '0 0 26 26'
+                }, [
+                    m('path', {
+                        'fill-rule': 'evenodd',
+                        'clip-rule': 'evenodd',
+                        d: 'M13 21a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-5.657-2.343a1 1 0 010 1.414l-2.121 2.121a1 1 0 01-1.414-1.414l2.12-2.121a1 1 0 011.415 0zm12.728 0l2.121 2.121a1 1 0 01-1.414 1.414l-2.121-2.12a1 1 0 011.414-1.415zM13 8a5 5 0 110 10 5 5 0 010-10zm12 4a1 1 0 110 2h-3a1 1 0 110-2h3zM4 12a1 1 0 110 2H1a1 1 0 110-2h3zm18.192-8.192a1 1 0 010 1.414l-2.12 2.121a1 1 0 01-1.415-1.414l2.121-2.121a1 1 0 011.414 0zm-16.97 0l2.121 2.12A1 1 0 015.93 7.344L3.808 5.222a1 1 0 011.414-1.414zM13 0a1 1 0 011 1v3a1 1 0 11-2 0V1a1 1 0 011-1z'
+                    })
+                ]);
+            }
+        };
+        
+        const MoonIcon = {
+            view() {
+                return m('svg', {
+                    class: 'theme-icon',
+                    xmlns: 'http://www.w3.org/2000/svg',
+                    viewBox: '0 0 26 26'
+                }, [
+                    m('path', {
+                        'fill-rule': 'evenodd',
+                        'clip-rule': 'evenodd',
+                        d: 'M13 0c.81 0 1.603.074 2.373.216C10.593 1.199 7 5.43 7 10.5 7 16.299 11.701 21 17.5 21c2.996 0 5.7-1.255 7.613-3.268C23.22 22.572 18.51 26 13 26 5.82 26 0 20.18 0 13S5.82 0 13 0z'
+                    })
+                ]);
+            }
+        };
+        
+        const CheckIcon = {
+            view() {
+                return m('svg', {
+                    class: 'checkmark',
+                    xmlns: 'http://www.w3.org/2000/svg',
+                    viewBox: '0 0 11 9'
+                }, [
+                    m('path', {
+                        fill: 'none',
+                        stroke: '#FFF',
+                        'stroke-width': '2',
+                        d: 'M1 4.304L3.696 7l6-6'
+                    })
+                ]);
+            }
+        };
+        
+        const CrossIcon = {
+            view() {
+                return m('svg', {
+                    class: 'delete-icon',
+                    xmlns: 'http://www.w3.org/2000/svg',
+                    viewBox: '0 0 18 18'
+                }, [
+                    m('path', {
+                        fill: '#494C6B',
+                        'fill-rule': 'evenodd',
+                        d: 'M16.97 0l.708.707L9.546 8.84l8.132 8.132-.707.707-8.132-8.132-8.132 8.132L0 16.97l8.132-8.132L0 .707.707 0 8.84 8.132 16.971 0z'
+                    })
+                ]);
+            }
+        };
+        
+        // Components
+        const Header = {
+            view() {
+                return m('div', { style: 'display: flex; justify-content: space-between; align-items: center;' }, [
+                    m('h1', { class: 'header-title' }, 'TODO'),
+                    m('button', {
+                        class: 'theme-toggle',
+                        onclick: () => {
+                            TodoStore.toggleTheme();
+                        }
+                    }, TodoStore.theme === 'dark' ? m(SunIcon) : m(MoonIcon))
+                ]);
+            }
+        };
+        
+        const TodoInput = {
+            text: '',
+            
+            view() {
+                return m('input', {
+                    type: 'text',
+                    placeholder: 'Create a new todo...',
+                    class: 'todo-input',
+                    value: this.text,
+                    oninput: (e) => { this.text = e.target.value; },
+                    onkeypress: (e) => {
+                        if (e.key === 'Enter') {
+                            TodoStore.addTodo(this.text);
+                            this.text = '';
+                        }
+                    }
+                });
+            }
+        };
+        
+        const TodoItem = {
+            view(vnode) {
+                const { todo, index } = vnode.attrs;
+                
+                return m('div', {
+                    class: `todo-item ${TodoStore.draggedIndex === index ? 'dragging' : ''}`,
+                    draggable: true,
+                    ondragstart: (e) => {
+                        TodoStore.draggedIndex = index;
+                    },
+                    ondragend: (e) => {
+                        TodoStore.draggedIndex = null;
+                    },
+                    ondragover: (e) => {
+                        e.preventDefault();
+                    },
+                    ondrop: (e) => {
+                        e.preventDefault();
+                        if (TodoStore.draggedIndex !== null && TodoStore.draggedIndex !== index) {
+                            TodoStore.reorderTodos(TodoStore.draggedIndex, index);
+                        }
+                    }
+                }, [
+                    m('div', {
+                        class: `checkbox-wrapper ${todo.completed ? 'checked' : ''}`,
+                        onclick: () => {
+                            TodoStore.toggleTodo(todo.id);
+                        }
+                    }, todo.completed ? m(CheckIcon) : null),
+                    m('span', { 
+                        class: `todo-text ${todo.completed ? 'completed' : ''}`,
+                        onclick: () => {
+                            TodoStore.toggleTodo(todo.id);
+                        }
+                    }, todo.text),
+                    m('button', {
+                        class: 'delete-btn',
+                        onclick: () => {
+                            TodoStore.deleteTodo(todo.id);
+                        }
+                    }, m(CrossIcon))
+                ]);
+            }
+        };
+        
+        const TodoList = {
+            view() {
+                const filteredTodos = TodoStore.getFilteredTodos();
+                
+                return m('div', { class: 'todo-card' }, [
+                    filteredTodos.map((todo, index) => 
+                        m(TodoItem, { key: todo.id, todo, index })
+                    ),
+                    m('div', { class: 'footer-controls' }, [
+                        m('div', `${TodoStore.getStats().active} items left`),
+                        m('div', { class: 'filter-group desktop-filters' }, [
+                            m('button', {
+                                class: `filter-btn ${TodoStore.filter === 'all' ? 'active' : ''}`,
+                                onclick: () => TodoStore.setFilter('all')
+                            }, 'All'),
+                            m('button', {
+                                class: `filter-btn ${TodoStore.filter === 'active' ? 'active' : ''}`,
+                                onclick: () => TodoStore.setFilter('active')
+                            }, 'Active'),
+                            m('button', {
+                                class: `filter-btn ${TodoStore.filter === 'completed' ? 'active' : ''}`,
+                                onclick: () => TodoStore.setFilter('completed')
+                            }, 'Completed')
+                        ]),
+                        m('button', {
+                            class: 'clear-btn',
+                            onclick: () => TodoStore.clearCompleted()
+                        }, 'Clear Completed')
+                    ])
+                ]);
+            }
+        };
+        
+        const MobileFilters = {
+            view() {
+                return m('div', { class: 'mobile-filters' }, [
+                    m('div', { class: 'filter-group' }, [
+                        m('button', {
+                            class: `filter-btn ${TodoStore.filter === 'all' ? 'active' : ''}`,
+                            onclick: () => TodoStore.setFilter('all')
+                        }, 'All'),
+                        m('button', {
+                            class: `filter-btn ${TodoStore.filter === 'active' ? 'active' : ''}`,
+                            onclick: () => TodoStore.setFilter('active')
+                        }, 'Active'),
+                        m('button', {
+                            class: `filter-btn ${TodoStore.filter === 'completed' ? 'active' : ''}`,
+                            onclick: () => TodoStore.setFilter('completed')
+                        }, 'Completed')
+                    ])
+                ]);
+            }
+        };
+        
+        const Footer = {
+            view() {
+                return m('div', { class: 'footer-hint' }, 'Drag and drop to reorder list');
+            }
+        };
+        
+        const App = {
+            oninit() {
+                TodoStore.init();
+            },
+            
+            view() {
+                return m('div', { class: 'todo-container' }, [
+                    m(Header),
+                    m(TodoInput),
+                    m(TodoList),
+                    m(MobileFilters),
+                    m(Footer)
+                ]);
+            }
+        };
+        
+        // Mount the app
+        m.mount(document.getElementById('app'), App);
+    </script>
+</body>
+</html>
